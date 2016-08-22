@@ -7,11 +7,17 @@ require 'database.php';
 
 class User
 {
-    private $userId;
+    public $userId,$userName,$pass,$profileImage,$mobileNo,$deviceId,$emailId;
 
-    function User($userId)
+    function User($userId,$userName,$pass,$profileImage,$mobileNo,$deviceId,$emailId)
     {
         $this->userId = $userId;
+        $this->userName = $userName;
+        $this->pass = $pass;
+        $this->profileImage = $profileImage;
+        $this->mobileNo = $mobileNo;
+        $this->deviceId = $deviceId;
+        $this->emailId = $emailId;
     }
 
     function getUser($userId)
@@ -25,6 +31,29 @@ class User
 
         if(count($rows) > 0) {
             $response = array("status"=>1,"message"=>"Success","user"=>$rows);
+            return $response;
+        }
+        else {
+            $response = array("status"=>-1,"message"=>"user dose not exists");
+            return $response;
+        }
+    }
+
+    function updateUser()
+    {
+        $database = new Database(ContactsConstants::DBHOST,ContactsConstants::DBUSER,ContactsConstants::DBPASS,ContactsConstants::DBNAME);
+        $dbConnection = $database->getDB();
+
+        $stmt = $dbConnection->prepare("UPDATE users SET `user_name` = :user_name, `password` = :password, `profile_image` = :profile_image,`device_id` = :device_id, 
+                                        `email_id` = :email_id, `mobile_no` = :mobile_no WHERE `user_id` = :user_id");
+
+        $stmt->execute(array(':user_name' => $this -> userName, ':password' => $this -> pass,':profile_image' => $this -> profileImage,':device_id' => $this -> deviceId,
+                                        ':email_id' => $this -> emailId, 'mobile_no' => $this -> mobileNo, ':user_id' => $this -> userId));
+
+        $count = $stmt->rowCount();
+
+        if($count > 0) {
+            $response = array("status"=>1,"message"=>"User Updated Successfully.","user"=>$count);
             return $response;
         }
         else {
