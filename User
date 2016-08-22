@@ -1,0 +1,38 @@
+<?php
+
+error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
+ini_set('display_errors', '1');
+
+require 'database.php';
+
+class User
+{
+    private $userId;
+
+    function User($userId)
+    {
+        $this->userId = $userId;
+    }
+
+    function getUser($userId)
+    {
+        $database = new Database(ContactsConstants::DBHOST,ContactsConstants::DBUSER,ContactsConstants::DBPASS,ContactsConstants::DBNAME);
+        $dbConnection = $database->getDB();
+
+        $stmt = $dbConnection->prepare("select * from users where user_id =?");
+        $stmt->execute(array($this->userId));
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if(count($rows) > 0) {
+            $response = array("status"=>1,"message"=>"Success","user"=>$rows);
+            return $response;
+        }
+        else {
+            $response = array("status"=>-1,"message"=>"user dose not exists");
+            return $response;
+        }
+    }
+
+}
+
+?>
