@@ -21,8 +21,9 @@ $profileImage = $json->profile_image;
 $mobileNo = $json->mobile_no;
 $deviceId = $json->device_id;
 $emailId = $json->email_id;
+$fullName = $json->fullName;
 
-$Register = new Register($userName,$password,$profileImage,$mobileNo,$deviceId,$emailId);
+$Register = new Register($userName,$password,$profileImage,$mobileNo,$deviceId,$emailId,$fullName);
 $response = $Register->RegisterUser();
 
 echo(json_encode($response));

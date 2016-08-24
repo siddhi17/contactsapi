@@ -10,8 +10,9 @@ class Register
     private $mobileNo;
     private $deviceId;
     private $emailId;
+    private $fullName;
 
-    function Register($userName,$password,$profileImage,$mobileNo,$deviceId,$emailId)
+    function Register($userName,$password,$profileImage,$mobileNo,$deviceId,$emailId,$fullName)
     {
         $this->userName = $userName;
         $this->password = $password;
@@ -19,6 +20,7 @@ class Register
         $this->mobileNo = $mobileNo;
         $this->deviceId = $deviceId;
         $this->emailId = $emailId;
+        $this->fullName = $fullName;
     }
 
     function RegisterUser()
@@ -43,8 +45,9 @@ class Register
     	$decoded=base64_decode($this->profileImage);
     	file_put_contents("profile_images/".$filenamePath,$decoded);
 
-        $stmt = $dbConnection->prepare("insert into Users(user_name,password,profile_image,mobile_no,device_id,email_id) values(?,?,?,?,?,?)");
-   		$stmt->execute(array($this->userName,$this->password,$this->profileImage,$this->mobileNo,$this->deviceId,$this->emailId));
+
+        $stmt = $dbConnection->prepare("insert into Users(user_name,password,profile_image,mobile_no,device_id,email_id,fullName) values(?,?,?,?,?,?,?)");
+   		$stmt->execute(array($this->userName,$this->password,$filenamePath,$this->mobileNo,$this->deviceId,$this->emailId,$this->fullName));
    		$rows = $stmt->rowCount();
 
 
@@ -58,6 +61,17 @@ class Register
             return $response;
         }
 
+    }
+
+   public function base64_to_jpeg($base64_string, $output_file) {
+        $ifp = fopen($output_file, "wb");
+
+        $data = explode(',', $base64_string);
+
+        fwrite($ifp, base64_decode($data[1]));
+        fclose($ifp);
+
+        return $output_file;
     }
 
 }
