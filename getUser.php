@@ -9,7 +9,7 @@
 error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 ini_set('display_errors', '1');
 
-require 'User';
+require 'User.php';
 
 $jsonText = file_get_contents('php://input');
 if(empty($jsonText))
@@ -21,7 +21,7 @@ if(empty($jsonText))
 $json = json_decode($jsonText);
 $userId = $json->user_id;
 
-$user = new User();
+$user = new User($userId,"","","","","","","");
 $response = $user->getUser($userId);
 
 echo(json_encode($response));

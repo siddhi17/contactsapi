@@ -3,7 +3,7 @@
 error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 ini_set('display_errors', '1');
 
-require 'User';
+require 'User.php';
 
 $jsonText = file_get_contents('php://input');
 if(empty($jsonText))
@@ -23,8 +23,9 @@ $deviceId = $json->device_id;
 $emailId = $json->email_id;
 $user_id = $json-> user_id;
 $status = $json-> status;
+$fullName = $json-> fullName;
 
-$user = new User($userId,$userName,$pass,$profileImage,$mobileNo,$deviceId,$emailId,$user_id,$status);
+$user = new User($userId,$userName,$pass,$profileImage,$mobileNo,$deviceId,$emailId,$user_id,$status,$fullName);
 $response = $user->updateUser();
 
 echo(json_encode($response));

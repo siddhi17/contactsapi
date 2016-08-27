@@ -2,10 +2,10 @@
 
 class ContactsConstants
 {
-    const DBNAME = 'Contacts';
-    const DBUSER = 'contactsUser';
-    const DBPASS = 'contacts12345';
-    const DBHOST = 'localhost';
+    const DBNAME = 'contactsapp';
+    const DBUSER = 'testuser1';
+    const DBPASS = 'xenon@2016';
+    const DBHOST = '104.131.162.126';
 }
 
 ?>

@@ -17,7 +17,7 @@ class Login
         $database = new Database(ContactsConstants::DBHOST,ContactsConstants::DBUSER,ContactsConstants::DBPASS,ContactsConstants::DBNAME);
         $dbConnection = $database->getDB();
 
-        $stmt = $dbConnection->prepare("select * from users where user_name=? and password=?");
+        $stmt = $dbConnection->prepare("select * from Users where user_name=? and password=?");
     	$stmt->execute(array($this->username,$this->password));
    	 	$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

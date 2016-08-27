@@ -16,7 +16,7 @@ $json = json_decode($jsonText);
 
 $unique_id = $json -> unique_id;
 
-$contact = new Contact($unique_id,"","","","","","","","");
+$contact = new Contact($unique_id,"","","","","","","","","","");
 $response = $contact->deleteContact();
 
 echo(json_encode($response));

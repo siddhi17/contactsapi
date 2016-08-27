@@ -4,12 +4,7 @@ error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 ini_set('display_errors', '1');
 
 require 'database.php';
-/**
- * Created by PhpStorm.
- * User: Siddhi
- * Date: 8/22/2016
- * Time: 2:55 PM
- */
+
 class Contact
 {
 
@@ -31,6 +26,7 @@ class Contact
         $this->user_id = $user_id;
         $this->status = $status;
     }
+
     function createContact()
     {
 
@@ -83,17 +79,16 @@ class Contact
 
         $contacts = array();
 
+        if (count($rows) > 0) {
 
-            if (count($rows) > 0) {
-
-                foreach($rows as $row)
-                {
-                    $contacts[] = $row;
-                }
-
-                $response = array("status" => 1, "message" => "Success", "contacts" => $contacts);
-                return json_encode($response);
+            foreach($rows as $row)
+            {
+                $contacts[] = $row;
             }
+
+            $response = array("status" => 1, "message" => "Success", "contacts" => $contacts);
+            return json_encode($response);
+        }
 
         else {
             $response = array("status"=>-1,"message"=>"Contact list is empty");
@@ -123,14 +118,15 @@ class Contact
             return $response;
         }
     }
+
     function deleteContact()
     {
 
         $database = new Database(ContactsConstants::DBHOST,ContactsConstants::DBUSER,ContactsConstants::DBPASS,ContactsConstants::DBNAME);
         $dbConnection = $database->getDB();
 
-        $stmt = $dbConnection->prepare("select * from contact where unique_id=?");
-        $stmt->execute(array($this -> unique_id));
+        $stmt = $dbConnection->prepare("select * from contact where `unique_id` =?");
+        $stmt->execute(array($this->unique_id));
         $rows = $stmt->rowCount();
 
         if($rows == 0)
@@ -141,7 +137,7 @@ class Contact
 
         $stmt = $dbConnection->prepare("Delete from contact WHERE `unique_id` = :unique_id");
 
-        $stmt->execute(array( ":unique_id" => $this -> unique_id ) );
+        $stmt->execute(array(":unique_id"=>$this->unique_id));
 
         $count = $stmt->rowCount();
 
@@ -153,6 +149,6 @@ class Contact
             $response = array("status"=>-1,"message"=>"Failed to delete.");
             return $response;
         }
-
     }
 }
+?>

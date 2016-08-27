@@ -23,8 +23,10 @@ $department = $json -> department;
 $job_title = $json -> job_title;
 $home_address = $json -> home_address;
 $work_address = $json -> work_address;
+$user_id = $json -> user_id;
+$status = $json -> status;
 
-$contact = new Contact($unique_id,$card_name,$name,$telephone_no,$company_name,$department,$job_title,$home_address,$work_address);
+$contact = new Contact($unique_id,$card_name,$name,$telephone_no,$company_name,$department,$job_title,$home_address,$work_address,$user_id,$status);
 $response = $contact->updateContact();
 
 echo(json_encode($response));
