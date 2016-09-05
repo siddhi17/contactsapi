@@ -46,7 +46,7 @@ class Register
     	file_put_contents("profile_images/".$filenamePath,$decoded);
 
 
-        $stmt = $dbConnection->prepare("insert into Users(user_name,password,profile_image,mobile_no,device_id,email_id,fullName) values(?,?,?,?,?,?,?)");
+        $stmt = $dbConnection->prepare("insert into Users(user_name,password,profile_image,mobile_no,device_id,email_id,full_name) values(?,?,?,?,?,?,?)");
    		$stmt->execute(array($this->userName,$this->password,$filenamePath,$this->mobileNo,$this->deviceId,$this->emailId,$this->fullName));
    		$rows = $stmt->rowCount();
 

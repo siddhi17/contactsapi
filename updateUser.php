@@ -14,18 +14,20 @@ if(empty($jsonText))
 
 $json = json_decode($jsonText);
 
-$userId = $json->user_id;
-$userName = $json->user_name;
-$pass  = $json->password;
-$profileImage = $json->profile_image;
-$mobileNo = $json->mobile_no;
-$deviceId = $json->device_id;
-$emailId = $json->email_id;
-$user_id = $json-> user_id;
-$status = $json-> status;
-$fullName = $json-> fullName;
+$userId = $json-> user_id;
+$userName = $json-> user_name;
+$pass = $json-> password;
+$profileImage = $json-> profile_image;
+$mobileNo = $json-> mobile_no;
+$deviceId = $json-> device_id;
+$emailId = $json-> email_id;
+$fullName = $json-> full_name;
+$jobTitle = $json-> job_title;
+$work_address = $json-> work_address;
+$home_address = $json-> home_address;
+$work_phone = $json-> work_phone;
 
-$user = new User($userId,$userName,$pass,$profileImage,$mobileNo,$deviceId,$emailId,$user_id,$status,$fullName);
+$user = new User($userId,$userName,$pass,$profileImage,$mobileNo,$deviceId,$emailId,$fullName,$work_address,$home_address,$work_phone,$jobTitle);
 $response = $user->updateUser();
 
 echo(json_encode($response));
