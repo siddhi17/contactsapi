@@ -67,35 +67,34 @@ class Linkage
         $dbConnection = $database->getDB();
 
         $stmt = $dbConnection->prepare("SELECT * from linkage where `user_id` =?");
-        $stmt->execute(array($this->user_id));
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+       $stmt->execute(array($this->user_id));
+       $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $linkedContacts = array();
 
 
+      if (count($rows) > 0)
 
-       if (count($rows) > 0) {
-
+        {
             foreach($rows as $row)
-            {
-                $l_contact_id = $row['linked_contact_id'];
+             {
+               $l_contact_id = $row['linked_contact_id'];
 
-                $stmt = $dbConnection->prepare("SELECT * from Users where `user_id` =?");
-                $stmt->execute(array($l_contact_id));
-                $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                $linkedContacts[] = $rows;
+               $stmt = $dbConnection->prepare("SELECT * from Users where `user_id` =?");
+               $stmt->execute(array($l_contact_id));
+
+                 $r = $stmt->fetch(PDO::FETCH_ASSOC);
+                 $linkedContacts[] = $r;
             }
 
             $response = array("status" => 1, "message" => "Success", "contacts" => $linkedContacts);
-            return json_encode($response);
+           return json_encode($response);
         }
 
         else {
-            $response = array("status"=>-1,"message"=>"Contact list is empty");
-            return json_encode($response);
-        }
-
-    }
-
+                $response = array("status"=>-1,"message"=>"Contact list is empty");
+                return json_encode($response);
+     }
+   }
 
 }

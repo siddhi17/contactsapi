@@ -27,6 +27,7 @@ $work_address = $json-> work_address;
 $home_address = $json-> home_address;
 $work_phone = $json-> work_phone;
 
+
 $user = new User($userId,$userName,$pass,$profileImage,$mobileNo,$deviceId,$emailId,$fullName,$work_address,$home_address,$work_phone,$jobTitle);
 $response = $user->updateUser();
 

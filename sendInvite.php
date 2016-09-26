@@ -1,4 +1,10 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: Siddhi
+ * Date: 9/12/2016
+ * Time: 5:38 PM
+ */
 
 error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 ini_set('display_errors', '1');
@@ -15,29 +21,15 @@ if(empty($jsonText))
 
 $json = json_decode($jsonText);
 
-   // $date = $json->date;
-   // $invitee_no = $json->invitee_no;
-   // $status = $json->status;
+$sender_id = $json-> sender_id;
+ $date = $json->date;
+ $invitee_no = $json->invitee_no;
+ $status = $json->status;
+$user_name = $json -> user_name;
 
-   // $invitations = $json -> invitations;
+ $invitation = new Invitation($sender_id,$date,$invitee_no,$status,$user_name);
+$response = $invitation->sendInvite();
 
-   // $invitation = new Invitation($invitations);
-   // $response = $invitation->sendInvite();
 
-$response = array();
-
-foreach ($json as $jsn) {
-    foreach($jsn as $j)
-    {
-        $date= $j -> date;
-        $invitee_no = $j -> invitee_no;
-        $status = $j -> status;
-        $user_id = $j -> user_id;
-        $invitation = new Invitation("",$date,$invitee_no,$status,$user_id);
-        $response[] = $invitation->sendInvite();
-
-    }
-
-}
 echo(json_encode($response));
 ?>

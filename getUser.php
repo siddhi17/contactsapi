@@ -21,8 +21,8 @@ if(empty($jsonText))
 $json = json_decode($jsonText);
 $userId = $json->user_id;
 
-$user = new User($userId,"","","","","","","");
-$response = $user->getUser($userId);
+$user = new User($userId,"","","","","","","","","","","");
+$response = $user->getUser();
 
 echo(json_encode($response));
 

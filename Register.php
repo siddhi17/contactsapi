@@ -40,14 +40,24 @@ class Register
    			return $response;
    		}
 
+   		if(!empty($this->profileImage)) {
 
-        $filenamePath = md5(time().uniqid()).".jpg";
-    	$decoded=base64_decode($this->profileImage);
-    	file_put_contents("profile_images/".$filenamePath,$decoded);
+            $filenamePath = md5(time() . uniqid()) . ".jpg";
+            $decoded = base64_decode($this->profileImage);
+            file_put_contents("profile_images/" . $filenamePath, $decoded);
+        }
+        else{
+            $filenamePath = "";
+        }
+
+        $job_title ="";
+        $work_address="";
+        $home_address="";
+        $work_phone ="";
 
 
-        $stmt = $dbConnection->prepare("insert into Users(user_name,password,profile_image,mobile_no,device_id,email_id,full_name) values(?,?,?,?,?,?,?)");
-   		$stmt->execute(array($this->userName,$this->password,$filenamePath,$this->mobileNo,$this->deviceId,$this->emailId,$this->fullName));
+        $stmt = $dbConnection->prepare("insert into Users(user_name,password,profile_image,mobile_no,device_id,email_id,full_name,job_title,work_address,home_address,work_phone) values(?,?,?,?,?,?,?,?,?,?,?)");
+   		$stmt->execute(array($this->userName,$this->password,$filenamePath,$this->mobileNo,$this->deviceId,$this->emailId,$this->fullName,$job_title,$work_address,$home_address,$work_phone));
    		$rows = $stmt->rowCount();
 
 
