@@ -2,7 +2,7 @@
 
 class ContactsConstants
 {
-    const DBNAME = 'Contacts';
+    const DBNAME = 'contactsapp';
     const DBUSER = 'contacts';
     const DBPASS = 'contacts';
     const DBHOST = 'localhost';

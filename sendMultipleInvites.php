@@ -32,15 +32,18 @@ foreach ($invitations as $j) {
         $sender_id = $j -> sender_id;
         $date= $j -> date;
         $invitee_no = $j -> invitee_no;
-       $status = $j -> status;
+        $status = $j -> status;
+        $contact_name = $j -> contact_name;
+        $contact_id = $j -> contact_id;
         $user_name = $j -> user_name;
-        $invitation = new Invitation($sender_id,$date,$invitee_no,$status,$user_name);
+
+        $invitation = new Invitation($sender_id,$date,$invitee_no,$status,"",$contact_id);
         $response[] = $invitation->sendMultipleInvites();
 
   //  }
 
 }
 
-$result = array("result"=> 1,"invitations" => $response);
+$result = array("result" => 1,"invitations" => $response);
 echo(json_encode($result));
 ?>

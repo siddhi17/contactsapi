@@ -11,9 +11,9 @@ require 'Invitation.php';
 
     $json = json_decode($jsonText);
 
-    $user_name = $json-> user_name;
+    $mobile_no = $json-> mobile_no;
 
-    $invitation = new Invitation("","","","",$user_name);
+    $invitation = new Invitation("","",$mobile_no,"","","");
     $response = $invitation -> getInvitations();
 
     if ( $response == null ) {

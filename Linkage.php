@@ -28,8 +28,8 @@ class Linkage
         $dbConnection = $database->getDB();
 
 
-        $stmt = $dbConnection->prepare("SELECT * from linkage where `linked_contact_id` =?");
-        $stmt->execute(array($this->linked_contact_id));
+        $stmt = $dbConnection->prepare("SELECT * from linkage where `linked_contact_id` =? && `user_id` =?");
+        $stmt->execute(array($this->linked_contact_id,$this->user_id));
         $rows = $stmt->rowCount();
 
         if($rows > 0) {

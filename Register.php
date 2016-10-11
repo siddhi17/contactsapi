@@ -42,7 +42,7 @@ class Register
 
    		if(!empty($this->profileImage)) {
 
-            $filenamePath = md5(time() . uniqid()) . ".jpg";
+            $filenamePath = md5(time() . uniqid()) . ".png";
             $decoded = base64_decode($this->profileImage);
             file_put_contents("profile_images/" . $filenamePath, $decoded);
         }
