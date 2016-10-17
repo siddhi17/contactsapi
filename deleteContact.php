@@ -1,9 +1,11 @@
 <?php
 
+header("Content-type: application/json");
+
 error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 ini_set('display_errors', '1');
 
-require 'Contact.php';
+require 'Linkage.php';
 
 $jsonText = file_get_contents('php://input');
 if(empty($jsonText))
@@ -14,10 +16,11 @@ if(empty($jsonText))
 
 $json = json_decode($jsonText);
 
-$unique_id = $json -> unique_id;
+$user_id = $json -> user_id;
+$linked_contact_id = $json -> linked_contact_id;
 
-$contact = new Contact($unique_id,"","","","","","","","","","");
-$response = $contact->deleteContact();
+$linkage = new Linkage("",$user_id,$linked_contact_id);
+$response = $linkage->deleteContact();
 
 echo(json_encode($response));
 

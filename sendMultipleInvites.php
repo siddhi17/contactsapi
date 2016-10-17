@@ -33,11 +33,8 @@ foreach ($invitations as $j) {
         $date= $j -> date;
         $invitee_no = $j -> invitee_no;
         $status = $j -> status;
-        $contact_name = $j -> contact_name;
-        $contact_id = $j -> contact_id;
-        $user_name = $j -> user_name;
 
-        $invitation = new Invitation($sender_id,$date,$invitee_no,$status,"",$contact_id);
+        $invitation = new Invitation($sender_id,$date,$invitee_no,$status,"");
         $response[] = $invitation->sendMultipleInvites();
 
   //  }

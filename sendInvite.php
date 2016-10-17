@@ -9,7 +9,7 @@
 error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 ini_set('display_errors', '1');
 
-require 'Invitation.php';
+require_once 'Invitation.php';
 
 $jsonText = file_get_contents('php://input');
 
@@ -19,13 +19,20 @@ if(empty($jsonText))
     die(json_encode($response));
 }
 
-$json = json_decode($jsonText);
+$j = json_decode($jsonText);
 
-$sender_id = $json-> sender_id;
-$user_name = $json -> user_name;
+$sender_id = $j -> sender_id;
+$date = $j -> date;
+$status = $j -> status;
+$username = $j -> user_name;
 
- $invitation = new Invitation($sender_id,"","","",$user_name,"");
+$invitation = new Invitation($sender_id,$date,"",$status,$username);
 $response = $invitation->sendInvite();
+
+
+//$message =  'Hi,add me to your unique contact list and you never need to update any changes anymore!';
+
+//$invitation->setNotification($message,$user_name);
 
 
 echo(json_encode($response));

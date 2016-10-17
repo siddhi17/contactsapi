@@ -97,4 +97,42 @@ class Linkage
      }
    }
 
+    function deleteContact()
+    {
+
+        $database = new Database(ContactsConstants::DBHOST,ContactsConstants::DBUSER,ContactsConstants::DBPASS,ContactsConstants::DBNAME);
+        $dbConnection = $database->getDB();
+
+        $stmt = $dbConnection->prepare("SELECT * FROM linkage WHERE `user_id` IN (`user_id`,`linked_contact_id`) && `linked_contact_id` IN (`linked_contact_id`,`user_id`)");
+        $stmt->execute(array($this->user_id,$this->linked_contact_id,$this->linked_contact_id,$this->user_id));
+        $rows = $stmt->rowCount();
+
+        if($rows == 0)
+        {
+            $response = array("status"=>-3,"message"=>"contact dose not exists.");
+            return $response;
+        }
+
+        $stmt = $dbConnection->prepare("Delete from linkage WHERE `user_id` = :user_id && `linked_contact_id` = :linked_contact_id");
+
+        $stmt->execute(array(":user_id"=>$this->user_id,":linked_contact_id" => $this->linked_contact_id));
+
+        $count = $stmt->rowCount();
+
+        $stmt = $dbConnection->prepare("Delete from linkage WHERE `user_id` = :user_id && `linked_contact_id` = :linked_contact_id");
+
+        $stmt->execute(array(":user_id"=>$this->linked_contact_id,":linked_contact_id" => $this->user_id));
+
+        $count = $stmt->rowCount();
+
+        if($count > 0) {
+            $response = array("status"=>1,"message"=>"Contact Deleted Successfully.","contact"=>$count);
+            return $response;
+        }
+        else {
+            $response = array("status"=>-1,"message"=>"Failed to delete.");
+            return $response;
+        }
+    }
+
 }

@@ -13,7 +13,7 @@ require 'Invitation.php';
 
     $mobile_no = $json-> mobile_no;
 
-    $invitation = new Invitation("","",$mobile_no,"","","");
+    $invitation = new Invitation("","",$mobile_no,"","");
     $response = $invitation -> getInvitations();
 
     if ( $response == null ) {

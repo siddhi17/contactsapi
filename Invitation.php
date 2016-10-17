@@ -9,22 +9,21 @@
 error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 ini_set('display_errors', '1');
 
-require 'database.php';
+require_once 'database.php';
 
 class Invitation
 {
-    private $sender_id,$date,$invitee_no,$status,$invitations,$user_name,$contact_id,$contact_name;
+    private $sender_id,$date,$invitee_no,$status,$username;
 
-    function Invitation($sender_id,$date,$invitee_no,$status,$user_name,$contact_id)
+
+    function Invitation($sender_id,$date,$invitee_no,$status,$user_name)
     {
 
-       $this->sender_id = $sender_id;
+        $this->sender_id = $sender_id;
         $this->date= $date;
         $this->invitee_no = $invitee_no;
         $this->status = $status;
         $this->user_name = $user_name;
-        $this->contact_id = $contact_id;
-       // $this -> invitations = $invitations;
 
     }
 
@@ -34,111 +33,30 @@ class Invitation
         $database = new Database(ContactsConstants::DBHOST, ContactsConstants::DBUSER, ContactsConstants::DBPASS, ContactsConstants::DBNAME);
         $dbConnection = $database->getDB();
 
-        $stmt = $dbConnection->prepare("select * from Invitation where user_name =? and sender_id = ?");
-        $stmt->execute(array($this->user_name,$this->sender_id));
-        $rows = $stmt->rowCount();
-
-
-        if ($rows > 0) {
-            $response = array("status" => -3, "message" => "Invitation exists.", "user_name" => $this->user_name);
-            return $response;
-        }
-
-        $this->date = "";
-        $this->invitee_no = "";
-        $this->status = "0";
-        $this->contact_id = 0;
-
-
-        $stmt = $dbConnection->prepare("insert into Invitation(sender_id,date,invitee_no,status,user_name,contact_id) values(?,?,?,?,?,?)");
-
-        $stmt->execute(array($this->sender_id, $this->date, $this->invitee_no, $this->status, $this->user_name,$this->contact_id));
-
-        $rows = $stmt->rowCount();
-        $Id = $dbConnection->lastInsertId();
-
-        $stmt = $dbConnection->prepare("Select device_id from Users where user_id =?");
-        $stmt->execute(array($this->sender_id));
+        $stmt = $dbConnection->prepare("Select device_id,mobile_no from Users where user_name =?");
+        $stmt->execute(array($this->user_name));
 
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         $token = $result["device_id"];
 
+        $this->invitee_no = $result["mobile_no"];
 
-        // $token = $row['device_id'];
+        $stmt = $dbConnection->prepare("select * from Invitation where invitee_no = ? && sender_id =?");
+        $stmt->execute(array($this->invitee_no,$this->sender_id));
+        $rows = $stmt->rowCount();
 
-      //  echo $token;
-        $message =  'Hi,add me to your unique contact list and you never need to update" +
-                        " any changes anymore!';
-     //   $data = array('post_id'=>'12345','post_title'=>'\'Hi,add me to your unique contact list and you never need to update" +
-       //                 " any changes anymore!');
-       // if(!empty($token))
-     //   {
-          /*  $url = 'https://fcm.googleapis.com/fcm/send';
-//api_key available in Firebase Console -> Project Settings -> CLOUD MESSAGING -> Server key
-            $server_key = 'AIzaSyBGwwJaThyLm-PhvgcbdYurj-bYQQ7XmCc';
-
-            $fields = array();
-            $fields['data'] = $data;
-            if(is_array($token)){
-                $fields['registration_ids'] = $token;
-            }else{
-                $fields['to'] = $token;
-            }
-//header with content_type api key
-            $headers = array(
-                'Content-Type:application/json',
-                'Authorization:key='.$server_key
-            );
-
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
-            $result = curl_exec($ch);
-            if ($result === FALSE) {
-                die('FCM Send Error: ' . curl_error($ch));
-            }
-            curl_close($ch);
-            echo $result;*/
-
-         //   $token = "d2bAfWa0aIM:APA91bGEO-8yuHbRAVSQc9tYDkEzOgRwUbH7V8QmaEcvUibO4wH7GOKgRjYnXK5TP941_3zporIdICfhI976WsmejDlM4zWqVjapf8h67xSeXj_Zmj2H-TjZxGmeRozuSUkUBnw_ofJe";
-
-            $message = 'Hi,add me to your unique contact list and you never need to update any changes anymore!';
-
-        $data = array("message"=>"Hi,add me to your unique contact list and you never need to update any changes anymore!","title"=>"You got an Invitation.");
-
-            if (!empty($token)) {
-                $url = 'https://fcm.googleapis.com/fcm/send';
-
-                $fields = array(
-                    'registration_ids' => array(
-                        $token
-                    ),
-                    'data' => array($data)
-                );
-                $fields = json_encode($fields);
-
-                $headers = array(
-                    'Authorization: key=' . "AIzaSyBGwwJaThyLm-PhvgcbdYurj-bYQQ7XmCc",
-                    'Content-Type: application/json'
-                );
-
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_POST, true);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
-
-                $result = curl_exec($ch);
-                echo $result;
-                curl_close($ch);
+        if ($rows > 0) {
+            $response = array("status" => -3, "message" => "Invitation exists.", "invitee_no" => $this->invitee_no);
+            return $response;
         }
+
+        $stmt = $dbConnection->prepare("insert into Invitation(sender_id,date,invitee_no,status) values(?,?,?,?)");
+
+        $stmt->execute(array($this->sender_id, $this->date, $this->invitee_no, $this->status));
+
+        $rows = $stmt->rowCount();
+        $Id = $dbConnection->lastInsertId();
+
 
         $stmt = $dbConnection->prepare("select * from Invitation where invitation_id=?");
         $stmt->execute(array($Id));
@@ -150,13 +68,17 @@ class Invitation
             return $response;
 
         } else {
+
+            $message =  'Hi,add me to your unique contact list and you never need to update any changes anymore!';
+
+            $server_key = 'AIzaSyBGwwJaThyLm-PhvgcbdYurj-bYQQ7XmCc';
+
+            $this->sendPush($message,$token,$server_key);
+
             $response = array("status" => 1, "message" => "Invitation sent.", "Invitation:" => $invitation);
             return $response;
-
         }
-
     }
-
 
     function sendMultipleInvites()
     {
@@ -164,48 +86,38 @@ class Invitation
         $database = new Database(ContactsConstants::DBHOST, ContactsConstants::DBUSER, ContactsConstants::DBPASS, ContactsConstants::DBNAME);
         $dbConnection = $database->getDB();
 
-      //  foreach($this->invitations as $invitation) {
 
-         //   $date = $invitation->date;
-          //  $invitee_no = $invitation->invitee_no;
-         //   $status = $invitation->status;
-        //    $sender_id = $invitation-> sender_id;
+        $stmt = $dbConnection->prepare("select * from Invitation where sender_id =? && invitee_no =?");
+        $stmt->execute(array($this->sender_id,$this->invitee_no));
+        $rows = $stmt->rowCount();
 
+        if ($rows > 0) {
+            $response = array("status" => -3, "message" => "Invitation exists.", "invitee_no" => $this->invitee_no);
+            return $response;
+        }
 
-            $stmt = $dbConnection->prepare("select * from Invitation where sender_id =? && contact_id =?");
-            $stmt->execute(array($this->sender_id,$this->contact_id));
-            $rows = $stmt->rowCount();
+        $stmt = $dbConnection->prepare("insert into Invitation(sender_id,date,invitee_no,status) values(?,?,?,?)");
 
-            if ($rows > 0) {
-                $response = array("status" => -3, "message" => "Invitation exists.", "invitee_no" => $this->invitee_no,"invitation" => "");
-                return $response;
-            }
+        $stmt->execute(array($this->sender_id, $this->date, $this->invitee_no, $this->status));
 
-            $this->user_name ="";
+        $rows = $stmt->rowCount();
+        $Id = $dbConnection->lastInsertId();
 
-            $stmt = $dbConnection->prepare("insert into Invitation(sender_id,date,invitee_no,status,user_name,contact_id) values(?,?,?,?,?,?)");
+        $stmt = $dbConnection->prepare("select * from Invitation where invitation_id=?");
+        $stmt->execute(array($Id));
+        $invitation = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            $stmt->execute(array($this->sender_id, $this->date, $this->invitee_no, $this->status, $this->user_name,$this->contact_id));
+        if ($rows < 1) {
 
-            $rows = $stmt->rowCount();
-            $Id = $dbConnection->lastInsertId();
+            $response = array("status" => -1, "message" => "Failed to send Invitation., unknown reason");
+            return $response;
 
-            $stmt = $dbConnection->prepare("select * from Invitation where invitation_id=?");
-            $stmt->execute(array($Id));
-            $invitation = $stmt->fetch(PDO::FETCH_ASSOC);
+        } else {
 
+            $response = array("status" => 1, "invitation" => $invitation);
+            return $response;
 
-            if ($rows < 1) {
-
-                $response = array("status" => -1, "message" => "Failed to send Invitation., unknown reason");
-                return $response;
-
-            } else {
-                $response = array("status" => 1, "invitation" => $invitation);
-                return $response;
-
-            }
-       // }
+        }
 
     }
 
@@ -214,18 +126,23 @@ class Invitation
         $database = new Database(ContactsConstants::DBHOST,ContactsConstants::DBUSER,ContactsConstants::DBPASS,ContactsConstants::DBNAME);
         $dbConnection = $database->getDB();
 
-        $stmt = $dbConnection->prepare("SELECT Invitation.invitation_id, Invitation.sender_id, Invitation.date, Invitation.invitee_no, Invitation.status, Invitation.contact_name, Invitation.contact_id, Users.user_name, Users.user_id, Users.profile_image FROM Invitation INNER JOIN Users ON Invitation.sender_id = Users.user_id where Invitation.invitee_no = ? AND Invitation.status = 0");
+        $stmt = $dbConnection->prepare("SELECT * FROM `Invitation` WHERE Invitation.invitee_no = ?");
         $stmt->execute(array($this-> invitee_no));
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $invitations = array();
 
-
         if (count($rows) > 0) {
 
             foreach($rows as $row)
             {
-                $invitations[] = $row;
+                $stmt = $dbConnection->prepare("Select * from Users where user_id =?");
+                $stmt->execute(array($row['sender_id']));
+
+                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                $final_array = array_merge($row,(array)$result);
+                $invitations[] = $final_array;
             }
 
             $response = array("status" => 1, "message" => "Success", "Invitations" => $invitations);
@@ -292,5 +209,45 @@ class Invitation
         }
     }
 
-    // }
+
+    public function sendPush($text, $tokens, $apiKey)
+    {
+
+        $notification = array(
+            "title" => "You got an invitation.",
+            "text" => $text,
+            "click_action" => "OPEN_ACTIVITY_1"
+        );
+
+        $msg = array
+        (
+            'message' => $text,
+            'title' => 'You got an invitation.',
+        );
+        $fields = array
+        (
+            'to' => $tokens,
+            'data' => $msg,
+            'notification' => $notification
+        );
+
+        $headers = array
+        (
+            'Authorization: key=' . $apiKey,
+            'Content-Type: application/json'
+        );
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://android.googleapis.com/gcm/send');
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
+
+        $result = curl_exec($ch);
+        //  echo($result);
+        //    return $result;
+        curl_close($ch);
+    }
 }

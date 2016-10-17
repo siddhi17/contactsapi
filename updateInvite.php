@@ -24,7 +24,7 @@ $json = json_decode($jsonText);
 $invitation_id = $json -> invitation_id;
 $status = $json -> status;
 
-$invitation = new Invitation("","","","","","");
+$invitation = new Invitation("","","","","");
 $response = $invitation->updateInvitation($invitation_id,$status);
 
 echo(json_encode($response));

@@ -23,7 +23,7 @@ $json = json_decode($jsonText);
 
 $invitation_id = $json -> invitation_id;
 
-$invitation = new Invitation("","","","","","","","");
+$invitation = new Invitation("","","","","");
 $response = $invitation->deleteInvitation($invitation_id);
 
 echo(json_encode($response));
