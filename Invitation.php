@@ -217,6 +217,7 @@ class Invitation
             "title" => "You got an invitation.",
             "text" => $text,
             "click_action" => "OPEN_ACTIVITY_1"
+
         );
 
         $msg = array
