@@ -9,21 +9,21 @@
 error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 ini_set('display_errors', '1');
 
-require_once 'database.php';
+require 'database.php';
 
 class Invitation
 {
-    private $sender_id,$date,$invitee_no,$status,$username;
-
+    private $sender_id,$date,$invitee_no,$status,$invitations,$user_name;
 
     function Invitation($sender_id,$date,$invitee_no,$status,$user_name)
     {
 
-        $this->sender_id = $sender_id;
+       $this->sender_id = $sender_id;
         $this->date= $date;
         $this->invitee_no = $invitee_no;
         $this->status = $status;
         $this->user_name = $user_name;
+       // $this -> invitations = $invitations;
 
     }
 
@@ -33,30 +33,22 @@ class Invitation
         $database = new Database(ContactsConstants::DBHOST, ContactsConstants::DBUSER, ContactsConstants::DBPASS, ContactsConstants::DBNAME);
         $dbConnection = $database->getDB();
 
-        $stmt = $dbConnection->prepare("Select device_id,mobile_no from Users where user_name =?");
-        $stmt->execute(array($this->user_name));
-
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        $token = $result["device_id"];
-
-        $this->invitee_no = $result["mobile_no"];
-
-        $stmt = $dbConnection->prepare("select * from Invitation where invitee_no = ? && sender_id =?");
-        $stmt->execute(array($this->invitee_no,$this->sender_id));
+        $stmt = $dbConnection->prepare("select * from Invitation where invitee_no =?");
+        $stmt->execute(array($this->invitee_no));
         $rows = $stmt->rowCount();
+
 
         if ($rows > 0) {
             $response = array("status" => -3, "message" => "Invitation exists.", "invitee_no" => $this->invitee_no);
             return $response;
         }
 
-        $stmt = $dbConnection->prepare("insert into Invitation(sender_id,date,invitee_no,status) values(?,?,?,?)");
+        $stmt = $dbConnection->prepare("insert into Invitation(sender_id,date,invitee_no,status,user_name) values(?,?,?,?,?)");
 
-        $stmt->execute(array($this->sender_id, $this->date, $this->invitee_no, $this->status));
+        $stmt->execute(array($this->sender_id,$this->date, $this->invitee_no, $this->status, $this -> user_name));
 
         $rows = $stmt->rowCount();
         $Id = $dbConnection->lastInsertId();
-
 
         $stmt = $dbConnection->prepare("select * from Invitation where invitation_id=?");
         $stmt->execute(array($Id));
@@ -68,17 +60,13 @@ class Invitation
             return $response;
 
         } else {
-
-            $message =  'Hi,add me to your unique contact list and you never need to update any changes anymore!';
-
-            $server_key = 'AIzaSyA1tR83CDRLGeSXSLPKMfvCZYAGouO3n9w';
-
-            $this->sendPush($message,$token,$server_key);
-
             $response = array("status" => 1, "message" => "Invitation sent.", "Invitation:" => $invitation);
             return $response;
+
         }
+
     }
+
 
     function sendMultipleInvites()
     {
@@ -87,37 +75,47 @@ class Invitation
         $dbConnection = $database->getDB();
 
 
-        $stmt = $dbConnection->prepare("select * from Invitation where sender_id =? && invitee_no =?");
-        $stmt->execute(array($this->sender_id,$this->invitee_no));
-        $rows = $stmt->rowCount();
+      //  foreach($this->invitations as $invitation) {
 
-        if ($rows > 0) {
-            $response = array("status" => -3, "message" => "Invitation exists.", "invitee_no" => $this->invitee_no);
-            return $response;
-        }
+         //   $date = $invitation->date;
+          //  $invitee_no = $invitation->invitee_no;
+         //   $status = $invitation->status;
+        //    $sender_id = $invitation-> sender_id;
 
-        $stmt = $dbConnection->prepare("insert into Invitation(sender_id,date,invitee_no,status) values(?,?,?,?)");
 
-        $stmt->execute(array($this->sender_id, $this->date, $this->invitee_no, $this->status));
+            $stmt = $dbConnection->prepare("select * from Invitation where invitee_no =?");
+            $stmt->execute(array($this->invitee_no));
+            $rows = $stmt->rowCount();
 
-        $rows = $stmt->rowCount();
-        $Id = $dbConnection->lastInsertId();
 
-        $stmt = $dbConnection->prepare("select * from Invitation where invitation_id=?");
-        $stmt->execute(array($Id));
-        $invitation = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($rows > 0) {
+                $response = array("status" => -3, "message" => "Invitation exists.", "invitee_no" => $this->invitee_no,"invitation" => "");
+                return $response;
+            }
 
-        if ($rows < 1) {
+            $stmt = $dbConnection->prepare("insert into Invitation(sender_id,date,invitee_no,status,user_name) values(?,?,?,?,?)");
 
-            $response = array("status" => -1, "message" => "Failed to send Invitation., unknown reason");
-            return $response;
+            $stmt->execute(array($this->sender_id, $this->date, $this->invitee_no, $this->status, $this->user_name));
 
-        } else {
+            $rows = $stmt->rowCount();
+            $Id = $dbConnection->lastInsertId();
 
-            $response = array("status" => 1, "invitation" => $invitation);
-            return $response;
+            $stmt = $dbConnection->prepare("select * from Invitation where invitation_id=?");
+            $stmt->execute(array($Id));
+            $invitation = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        }
+
+            if ($rows < 1) {
+
+                $response = array("status" => -1, "message" => "Failed to send Invitation., unknown reason");
+                return $response;
+
+            } else {
+                $response = array("status" => 1, "invitation" => $invitation);
+                return $response;
+
+            }
+       // }
 
     }
 
@@ -126,23 +124,18 @@ class Invitation
         $database = new Database(ContactsConstants::DBHOST,ContactsConstants::DBUSER,ContactsConstants::DBPASS,ContactsConstants::DBNAME);
         $dbConnection = $database->getDB();
 
-        $stmt = $dbConnection->prepare("SELECT * FROM `Invitation` WHERE Invitation.invitee_no = ?");
-        $stmt->execute(array($this-> invitee_no));
+        $stmt = $dbConnection->prepare("SELECT Invitation.invitation_id, Invitation.sender_id, Invitation.date,Invitation.invitee_no,Invitation.status, Invitation.user_name, Users.user_name,Users.user_id, Users.profile_image FROM Invitation INNER JOIN Users ON Invitation.sender_id = Users.user_id WHERE Invitation.sender_id = ?");
+        $stmt->execute(array($this -> sender_id));
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $invitations = array();
+
 
         if (count($rows) > 0) {
 
             foreach($rows as $row)
             {
-                $stmt = $dbConnection->prepare("Select * from Users where user_id =?");
-                $stmt->execute(array($row['sender_id']));
-
-                $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                $final_array = array_merge($row,(array)$result);
-                $invitations[] = $final_array;
+                $invitations[] = $row;
             }
 
             $response = array("status" => 1, "message" => "Success", "Invitations" => $invitations);
@@ -209,46 +202,5 @@ class Invitation
         }
     }
 
-
-    public function sendPush($text, $tokens, $apiKey)
-    {
-
-        $notification = array(
-            "title" => "You got an invitation.",
-            "text" => $text,
-            "click_action" => "OPEN_ACTIVITY_1"
-
-        );
-
-        $msg = array
-        (
-            'message' => $text,
-            'title' => 'You got an invitation.',
-        );
-        $fields = array
-        (
-            'to' => $tokens,
-            'data' => $msg,
-            'notification' => $notification
-        );
-
-        $headers = array
-        (
-            'Authorization: key=' . $apiKey,
-            'Content-Type: application/json'
-        );
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
-
-        $result = curl_exec($ch);
-        //  echo($result);
-        //    return $result;
-        curl_close($ch);
-    }
+    // }
 }
