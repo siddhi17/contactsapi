@@ -54,10 +54,11 @@ class Register
         $work_address="";
         $home_address="";
         $work_phone ="";
+        $company ="";
 
 
-        $stmt = $dbConnection->prepare("insert into Users(user_name,password,profile_image,mobile_no,device_id,email_id,full_name,job_title,work_address,home_address,work_phone) values(?,?,?,?,?,?,?,?,?,?,?)");
-   		$stmt->execute(array($this->userName,$this->password,$filenamePath,$this->mobileNo,$this->deviceId,$this->emailId,$this->fullName,$job_title,$work_address,$home_address,$work_phone));
+        $stmt = $dbConnection->prepare("insert into Users(user_name,password,profile_image,mobile_no,device_id,email_id,full_name,job_title,work_address,home_address,work_phone,company) values(?,?,?,?,?,?,?,?,?,?,?,?)");
+   		$stmt->execute(array($this->userName,$this->password,$filenamePath,$this->mobileNo,$this->deviceId,$this->emailId,$this->fullName,$job_title,$work_address,$home_address,$work_phone,$company));
    		$rows = $stmt->rowCount();
 
 

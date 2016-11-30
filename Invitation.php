@@ -33,11 +33,37 @@ class Invitation
         $database = new Database(ContactsConstants::DBHOST, ContactsConstants::DBUSER, ContactsConstants::DBPASS, ContactsConstants::DBNAME);
         $dbConnection = $database->getDB();
 
-        $stmt = $dbConnection->prepare("Select device_id,mobile_no from Users where user_name =?");
+        $stmt = $dbConnection->prepare("Select device_id,mobile_no,user_id,user_name from Users where user_name =?");
         $stmt->execute(array($this->user_name));
 
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         $token = $result["device_id"];
+        $user_id = $result["user_id"];
+        $row = $stmt->rowCount();
+
+      //  $sameUser = ($this->username === $username) ? 'true' : 'false';
+
+        if(strcmp($this->sender_id,$user_id) == 0)
+        {
+            $response = array("status" => -5, "message" => "User can not send invite to himself.");
+            return $response;
+        }
+
+        if ($row < 1) {
+            $response = array("status" => -6, "message" => "User dose not exists.");
+            return $response;
+        }
+
+        $stmt = $dbConnection->prepare("Select user_id,linked_contact_id from linkage where user_id =? AND linked_contact_id = ?");
+        $stmt->execute(array($user_id,$this->sender_id));
+
+        $linked = $stmt->fetch(PDO::FETCH_ASSOC);
+        $row = $stmt->rowCount();
+
+        if ($row > 0) {
+            $response = array("status" => -4, "message" => "User exists in your contacts.");
+            return $response;
+        }
 
         $this->invitee_no = $result["mobile_no"];
 
@@ -71,9 +97,18 @@ class Invitation
 
             $message =  'Hi,add me to your unique contact list and you never need to update any changes anymore!';
 
-            $server_key = 'AIzaSyA1tR83CDRLGeSXSLPKMfvCZYAGouO3n9w';
+            if(strpos( $token, 'iOS-' ) !== false )
+            {
+                $server_key = 'AIzaSyC2anrixrOY4OJajmSCSZUpQOY45DhVY2A';
+            //    echo $token;
+                $token = str_replace("iOS-","",$token);
+                $this->sendPush($message,$token,$server_key);
+            }
 
-            $this->sendPush($message,$token,$server_key);
+            else{
+                $server_key = 'AIzaSyA1tR83CDRLGeSXSLPKMfvCZYAGouO3n9w';
+                $this->sendPush($message,$token,$server_key);
+            }
 
             $response = array("status" => 1, "message" => "Invitation sent.", "Invitation:" => $invitation);
             return $response;
@@ -227,9 +262,12 @@ class Invitation
         );
         $fields = array
         (
+
             'to' => $tokens,
             'data' => $msg,
-            'notification' => $notification
+            'notification' => $notification,
+            'priority' => 'high'
+
         );
 
         $headers = array

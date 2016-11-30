@@ -26,9 +26,10 @@ $jobTitle = $json-> job_title;
 $work_address = $json-> work_address;
 $home_address = $json-> home_address;
 $work_phone = $json-> work_phone;
+$company = $json-> company;
 
 
-$user = new User($userId,$userName,$pass,$profileImage,$mobileNo,$deviceId,$emailId,$fullName,$work_address,$home_address,$work_phone,$jobTitle);
+$user = new User($userId,$userName,$pass,$profileImage,$mobileNo,$deviceId,$emailId,$fullName,$work_address,$home_address,$work_phone,$jobTitle,$company);
 $response = $user->updateUser();
 
 echo(json_encode($response));

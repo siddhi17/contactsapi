@@ -7,9 +7,9 @@ require 'database.php';
 
 class User
 {
-    public $userId,$userName,$pass,$profileImage,$mobileNo,$deviceId,$emailId,$fullName,$work_address,$home_address,$work_no,$job_title;
+    public $userId,$userName,$pass,$profileImage,$mobileNo,$deviceId,$emailId,$fullName,$work_address,$home_address,$work_no,$job_title,$company;
 
-    function User($userId,$userName,$pass,$profileImage,$mobileNo,$deviceId,$emailId,$fullName,$work_address,$home_address,$work_phone,$jobTitle)
+    function User($userId,$userName,$pass,$profileImage,$mobileNo,$deviceId,$emailId,$fullName,$work_address,$home_address,$work_phone,$jobTitle,$company)
     {
         $this->userId = $userId;
         $this->userName = $userName;
@@ -23,6 +23,7 @@ class User
         $this->home_address = $home_address;
         $this->work_no = $work_phone;
         $this->job_title = $jobTitle;
+        $this->company = $company;
     }
 
     function getUser()
@@ -34,7 +35,10 @@ class User
         $stmt->execute(array($this->userId));
         $rows = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if(count($rows) > 0) {
+        $count = $stmt->rowCount();
+
+        if($count > 0)
+        {
             $response = array("status"=>1,"message"=>"Success","user"=>$rows);
             return $response;
         }
@@ -43,6 +47,30 @@ class User
             return $response;
         }
     }
+
+
+    function getPass()
+    {
+        $database = new Database(ContactsConstants::DBHOST,ContactsConstants::DBUSER,ContactsConstants::DBPASS,ContactsConstants::DBNAME);
+        $dbConnection = $database->getDB();
+
+        $stmt = $dbConnection->prepare("select password from Users where email_id =?");
+        $stmt->execute(array($this->emailId));
+        $rows = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $count = $stmt->rowCount();
+
+        if($count > 0)
+        {
+            $response = array("status"=>1,"message"=>"Success","user"=>$rows);
+            return $response;
+        }
+        else {
+            $response = array("status"=>-1,"message"=>"user dose not exists");
+            return $response;
+        }
+    }
+
 
     function updateToken($userId,$token)
     {
@@ -95,6 +123,7 @@ class User
         $homeAddress = $result['home_address'];
         $workPhone = $result['work_phone'];
         $job_title = $result['job_title'];
+        $company = $result['company'];
 
 
         $stmt = $dbConnection->prepare("SELECT * from linkage where `user_id` =?");
@@ -122,11 +151,11 @@ class User
 
             $stmt = $dbConnection->prepare("UPDATE Users SET `user_name` = :user_name, `password` = :password, `device_id` = :device_id, 
                                         `email_id` = :email_id, `mobile_no` = :mobile_no, `full_name` = :fullName, `work_address` = :work_address, `home_address` = :home_address,
-                                         `work_phone` = :work_phone, `job_title` = :job_title WHERE `user_id` = :user_id");
+                                         `work_phone` = :work_phone, `job_title` = :job_title,`company` = :company WHERE `user_id` = :user_id");
 
             $stmt->execute(array(':user_name' => $this -> userName, ':password' => $this -> pass, ':device_id' => $this -> deviceId,
                 ':email_id' => $this -> emailId, ':mobile_no' => $this -> mobileNo, ':fullName' => $this-> fullName, ':work_address' => $this-> work_address,
-                ':home_address' => $this->home_address, ':work_phone' => $this->work_no, ':job_title' => $this->job_title, ':user_id' => $this -> userId));
+                ':home_address' => $this->home_address, ':work_phone' => $this->work_no, ':job_title' => $this->job_title, 'company' => $this -> company, ':user_id' => $this -> userId));
 
             $count = $stmt->rowCount();
 
@@ -136,16 +165,16 @@ class User
 
             $stmt = $dbConnection->prepare("UPDATE Users SET `user_name` = :user_name, `password` = :password, `profile_image` = :profile_image,`device_id` = :device_id, 
                                         `email_id` = :email_id, `mobile_no` = :mobile_no, `full_name` = :fullName, `work_address` = :work_address, `home_address` = :home_address,
-                                         `work_phone` = :work_phone, `job_title` = :job_title WHERE `user_id` = :user_id");
+                                         `work_phone` = :work_phone, `job_title` = :job_title, `company` = :company WHERE `user_id` = :user_id");
 
             $stmt->execute(array(':user_name' => $this->userName, ':password' => $this->pass, ':profile_image' => $filenamePath, ':device_id' => $this->deviceId,
                 ':email_id' => $this->emailId, ':mobile_no' => $this->mobileNo, ':fullName' => $this->fullName, ':work_address' => $this->work_address,
-                ':home_address' => $this->home_address, ':work_phone' => $this->work_no, ':job_title' => $this->job_title, ':user_id' => $this->userId));
+                ':home_address' => $this->home_address, ':work_phone' => $this->work_no, ':job_title' => $this->job_title, 'company' => $this ->company, ':user_id' => $this->userId));
 
             $count = $stmt->rowCount();
         }
 
-        $api_key = "AIzaSyA1tR83CDRLGeSXSLPKMfvCZYAGouO3n9w";
+      //  $api_key = "AIzaSyA1tR83CDRLGeSXSLPKMfvCZYAGouO3n9w";
 
         if($count > 0) {
             $response = array("status"=>1,"message"=>"User Updated Successfully.","user"=>$count);
@@ -159,8 +188,17 @@ class User
                     $text = $this->userName . " " . "has updated mobile number.";
 
                         $token = $contact['device_id'];
+                    if(strpos( $token, 'iOS-' ) !== false )
+                    {
+                        $server_key = 'AIzaSyC2anrixrOY4OJajmSCSZUpQOY45DhVY2A';
+                        $token = str_replace("iOS-","",$token);
+                        $this->sendPush($text,$token,$server_key,$this->userId);
+                    }
 
-                    $this->sendPush($text, $token, $api_key, $this->userId);
+                    else{
+                        $server_key = 'AIzaSyA1tR83CDRLGeSXSLPKMfvCZYAGouO3n9w';
+                        $this->sendPush($text,$token,$server_key,$this->userId);
+                    }
 
                 }
                 if (strcmp($this->emailId, $emailId) != 0) {
@@ -169,7 +207,17 @@ class User
 
                         $token = $contact['device_id'];
 
-                        $this->sendPush($text, $token, $api_key,$this->userId);
+                    if(strpos( $token, 'iOS-' ) !== false )
+                    {
+                        $server_key = 'AIzaSyC2anrixrOY4OJajmSCSZUpQOY45DhVY2A';
+                        $token = str_replace("iOS-","",$token);
+                        $this->sendPush($text,$token,$server_key,$this->userId);
+                    }
+
+                    else{
+                        $server_key = 'AIzaSyA1tR83CDRLGeSXSLPKMfvCZYAGouO3n9w';
+                        $this->sendPush($text,$token,$server_key,$this->userId);
+                    }
 
                 }
                 if (strcmp($this->home_address, $homeAddress)  != 0) {
@@ -178,7 +226,17 @@ class User
 
                         $token = $contact['device_id'];
 
-                        $this->sendPush($text, $token, $api_key,$this->userId);
+                    if(strpos( $token, 'iOS-' ) !== false )
+                    {
+                        $server_key = 'AIzaSyC2anrixrOY4OJajmSCSZUpQOY45DhVY2A';
+                        $token = str_replace("iOS-","",$token);
+                        $this->sendPush($text,$token,$server_key,$this->userId);
+                    }
+
+                    else{
+                        $server_key = 'AIzaSyA1tR83CDRLGeSXSLPKMfvCZYAGouO3n9w';
+                        $this->sendPush($text,$token,$server_key,$this->userId);
+                    }
 
                 }
                 if (strcmp($this->work_address, $workAddress)  != 0) {
@@ -186,8 +244,17 @@ class User
                     $text = $this->userName . " " . "has updated work address.";
 
                         $token = $contact['device_id'];
+                    if(strpos( $token, 'iOS-' ) !== false )
+                    {
+                        $server_key = 'AIzaSyC2anrixrOY4OJajmSCSZUpQOY45DhVY2A';
+                        $token = str_replace("iOS-","",$token);
+                        $this->sendPush($text,$token,$server_key,$this->userId);
+                    }
+                    else{
+                        $server_key = 'AIzaSyA1tR83CDRLGeSXSLPKMfvCZYAGouO3n9w';
+                        $this->sendPush($text,$token,$server_key,$this->userId);
+                    }
 
-                        $this->sendPush($text, $token, $api_key,$this->userId);
 
                 }
                 if (strcmp($this->work_no, $workPhone)  != 0) {
@@ -196,7 +263,18 @@ class User
 
                         $token = $contact['device_id'];
 
-                        $this->sendPush($text, $token, $api_key,$this->userId);
+                    if(strpos( $token, 'iOS-' ) !== false )
+                    {
+                        $server_key = 'AIzaSyC2anrixrOY4OJajmSCSZUpQOY45DhVY2A';
+                        $token = str_replace("iOS-","",$token);
+                        $this->sendPush($text,$token,$server_key,$this->userId);
+                    }
+
+                    else{
+                        $server_key = 'AIzaSyA1tR83CDRLGeSXSLPKMfvCZYAGouO3n9w';
+                        $this->sendPush($text,$token,$server_key,$this->userId);
+                    }
+
 
 
                 }
@@ -206,7 +284,20 @@ class User
 
                         $token = $contact['device_id'];
 
-                        $this->sendPush($text, $token, $api_key,$this->userId);
+                    if(strpos( $token, 'iOS-' ) !== false )
+                    {
+                        $server_key = 'AIzaSyC2anrixrOY4OJajmSCSZUpQOY45DhVY2A';
+                        $token = str_replace("iOS-","",$token);
+                        $this->sendPush($text,$token,$server_key,$this->userId);
+                    }
+
+                    else{
+                        $server_key = 'AIzaSyA1tR83CDRLGeSXSLPKMfvCZYAGouO3n9w';
+                        $this->sendPush($text,$token,$server_key,$this->userId);
+                    }
+
+
+                    //   $this->sendPush($text, $token, $api_key,$this->userId);
 
                 }
                 if (strcmp($this->fullName, $fullName) != 0) {
@@ -215,7 +306,40 @@ class User
 
                         $token = $contact['device_id'];
 
-                        $this->sendPush($text, $token, $api_key,$this->userId);
+                    if(strpos( $token, 'iOS-' ) !== false )
+                    {
+                        $server_key = 'AIzaSyC2anrixrOY4OJajmSCSZUpQOY45DhVY2A';
+                        $token = str_replace("iOS-","",$token);
+                        $this->sendPush($text,$token,$server_key,$this->userId);
+                    }
+
+                    else{
+                        $server_key = 'AIzaSyA1tR83CDRLGeSXSLPKMfvCZYAGouO3n9w';
+                        $this->sendPush($text,$token,$server_key,$this->userId);
+                    }
+
+
+                    //  $this->sendPush($text, $token, $api_key,$this->userId);
+                }
+                if (strcmp($this->company, $company) != 0) {
+
+                    $text = $this->userName . " " . "has updated company.";
+
+                    $token = $contact['device_id'];
+
+                    if(strpos( $token, 'iOS-' ) !== false )
+                    {
+                        $server_key = 'AIzaSyC2anrixrOY4OJajmSCSZUpQOY45DhVY2A';
+                        $token = str_replace("iOS-","",$token);
+                        $this->sendPush($text,$token,$server_key,$this->userId);
+                    }
+
+                    else{
+                        $server_key = 'AIzaSyA1tR83CDRLGeSXSLPKMfvCZYAGouO3n9w';
+                        $this->sendPush($text,$token,$server_key,$this->userId);
+                    }
+
+                    //  $this->sendPush($text, $token, $api_key,$this->userId);
                 }
             }
 
@@ -251,7 +375,8 @@ class User
         (
             'to' => $tokens,
             'data' => $data,
-            'notification' => $notification
+            'notification' => $notification,
+            'priority' => 'high'
         );
 
         $headers = array
@@ -273,7 +398,5 @@ class User
         //    return $result;
         curl_close($ch);
     }
-
-
 }
 ?>

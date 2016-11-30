@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: Siddhi
- * Date: 8/22/2016
- * Time: 12:43 PM
+ * Date: 11/30/2016
+ * Time: 12:53 PM
  */
 
 
@@ -22,10 +22,10 @@ if(empty($jsonText))
 }
 
 $json = json_decode($jsonText);
-$userId = $json->user_id;
+$emailId = $json->email_id;
 
-$user = new User($userId,"","","","","","","","","","","","");
-$response = $user->getUser();
+$user = new User("","","","","","",$emailId,"","","","","","");
+$response = $user->getPass();
 
 echo(json_encode($response));
 

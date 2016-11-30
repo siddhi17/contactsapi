@@ -26,7 +26,7 @@ $json = json_decode($jsonText);
 $user_id = $json -> user_id;
 $token = $json -> token;
 
-$user = new User("","","","","","","","","","","","");
+$user = new User("","","","","","","","","","","","","");
 $response = $user->updateToken($user_id,$token);
 
 echo(json_encode($response));

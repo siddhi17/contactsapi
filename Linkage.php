@@ -72,8 +72,9 @@ class Linkage
 
         $linkedContacts = array();
 
+        $count = $stmt->rowCount();
 
-      if (count($rows) > 0)
+        if($count > 0)
 
         {
             foreach($rows as $row)

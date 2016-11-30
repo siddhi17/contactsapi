@@ -19,20 +19,28 @@ class Login
 
         $stmt = $dbConnection->prepare("select * from Users where user_name=? and password=?");
     	$stmt->execute(array($this->username,$this->password));
-   	 	$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+   	 	$rows = $stmt->fetch(PDO::FETCH_ASSOC);
 
     	if(count($rows) < 1) {
 
-   			$response = array("status"=>-1,"message"=>"user doesnt exists");
+   			$response = array("status"=>-1,"message"=>"user doesn't exists");
    			return $response;
     	}
         else
         {
-            $response = array("status"=>1,"message"=>"user authenticated successfully","user"=>$rows[0]);
-            return $response;
+            $username = $rows['user_name'];
+            $password = $rows['password'];
+
+            if($username == $this->username && $password == $this->password) {
+                $response = array("status" => 1, "message" => "user authenticated successfully", "user" => $rows);
+                return $response;
+            }
+            else
+            {
+                $response = array("status"=>-1,"message"=>"user doesn't exists");
+                return $response;
+            }
         }
-
-
     }
 
 }
